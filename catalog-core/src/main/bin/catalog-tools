@@ -1,0 +1,445 @@
+#!/bin/env bash
+#
+# 数据表结构导出备份工具脚本，
+# 功能：
+#  1. 导出指定类型数据库的表结构
+#  2. 关闭指定导出操作运行的服务
+#  3. 查看某操作的运行状态
+#  4. 查看示例
+#  5. 查看当前项目版本
+#  6. 解析 hfile 为 json 文件
+#  7. 导出 HBase 表结构
+#  8. 导出 Hive 表结构
+#  9. 导出 Impala 表结构
+#  10. 导出 Kudu 表结构
+#  11. 导出 ClickHouse 表结构
+#  12. 导出 MySQL 表结构
+#  13. 字符加密为密文（用于数据库中敏感信息的加密）
+#
+# @author Yore Yuan
+# @date 2021-07-03
+#
+read -d '' example_string << EOF
+示例:
+  1. 查看 Phoenix 备份运行服务的状态
+    catalog-tools phoenix status
+  2. 停止正在运行的 Phoenix 备份服务
+    catalog-tools phoenix stop
+
+  3. 备份 Phoenix 所有 表or视图 到 /home/user/Phoenix-view-DDL-DATE.sql
+    catalog-tools phoenix /home/user/Phoenix-view-DDL-DATE.sql
+  4. 备份 Phoenix 中T_M_INF_POLICY 表or视图到 /home/user/Phoenix-view-DDL-DATE-part.sql
+    catalog-tools phoenix /home/user/Phoenix-view-DDL-DATE.sql T_M_INF_POLICY
+
+  5. 解析 hfile 为json（hfile_path根据 conf/HFilePath.properties 中的 file.model 可为 local 或 hdfs）
+    catalog-tools hfile /home/user/hfile-kv-DATE.data hfile_path1 hfile_path2 ...
+
+  6. hbase表结构备份
+    catalog-tools hbase /home/user/hbase-table-DDL-DATE.txt
+    catalog-tools hbase /home/user/hbase-table-DDL-DATE.txt table1 table2 ...
+
+  7. Hive表结构备份
+    catalog-tools hive /home/user/hive-table-DDL-DATE.sql
+    catalog-tools hive /home/user/hive-table-DDL-DATE-part0.sql db_name
+    catalog-tools hive /home/user/hive-table-DDL-DATE-part1.sql db_name table1 table2 ...
+
+  8. impala表结构备份
+    catalog-tools impala /home/user/impala-table-DDL-DATE.sql
+    catalog-tools impala /home/user/impala-table-DDL-DATE-part0.sql db_name
+    catalog-tools impala /home/user/impala-table-DDL-DATE-part1.sql db_name table1 table2 ...
+
+  9. Kudu表结构备份。通过 impala 进行备份，见 8
+
+  10. clickhouse表结构备份
+    catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE.sql
+    catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE-part0.sql db_name
+    catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE-part1.sql db_name table1 table2 ...
+
+  11. mysql表结构备份
+    catalog-tools mysql /home/user/mysql-table-DDL-DATE.sql
+    catalog-tools mysql /home/user/mysql-table-DDL-DATE-part0.sql db_name
+    catalog-tools mysql /home/user/mysql-table-DDL-DATE-part1.sql db_name table1 table2 ...
+
+EOF
+
+nowdate=`date '+%Y-%m-%d-%H%M%S'`
+example_string=`echo "$example_string" | sed  "s@DATE@${nowdate}@g"`
+
+_help() {
+  #echo "Usage: catalog-tools [<options>] <command> [<args>]"
+  echo "Usage: catalog-tools.sh <type> <outpath|stop|status> [<args>]"
+  echo "type: 数据备份的类型【必填】"
+  echo "    demo            查看示例"
+  echo "    help            查看帮助信息，亦等价于：--help、-h"
+  echo "    version         查看版本信息, 亦等价于：-v"
+  echo "    enc             转密文"
+  echo "    phoenix         备份Phoenix表及视图"
+  echo "    hfile           解析 HFile 数据"
+  echo "    hbase           备份HBase表"
+  echo "    hive            备份Hive库表"
+  echo "    impala          备份Impala库表"
+  echo "    Kudu            备份Kudu表"
+  echo "    clickhouse      备份ClickHouse库表"
+  echo "    mysql           备份Mysql库表"
+  echo "outpath: 备份数据的输出路径【必填】"
+  echo "stop: 停止指定的正在运行的服务"
+  echo "status: 查看指定服务的运行状态"
+  echo "args: 可选参数，可以指定具体的库表"
+  echo ""
+  echo "$example_string"
+  echo ""
+  exit 1
+}
+
+
+if [ $# = 0 ]; then
+  _help
+fi
+
+BIN_DIR=`dirname "$0"`
+BIN_DIR=`cd "$BIN_DIR">/dev/null; pwd`
+TOOLS_HOME=$BIN_DIR/..
+HOSTNAME=`hostname`
+TYPE=$1
+shift
+#OUT_PATH=$2
+#PARAM_2=$2
+TOOLS_CONF_DIR=$TOOLS_HOME/conf
+export TOOLS_LIB_JARS=$TOOLS_HOME/lib/*
+export HADOOP_USER_NAME=hbase
+TOOLS_LOG_DIR=$TOOLS_HOME/logs
+TOOLS_PID_DIR=$TOOLS_HOME/pid
+log=$TOOLS_LOG_DIR/tools-$TYPE-$HOSTNAME.out
+pid=$TOOLS_PID_DIR/tools-$TYPE.pid
+JAVA_HOME=$JAVA_HOME
+JAVA=$JAVA_HOME/bin/java
+STOP_TIMEOUT=5
+TODO_GREEN="\033[1;32mTODO\033[0m"
+ERROR_RED="\033[1;31m[ERROR]\033[0m"
+# JDK8 时必须添加 -noverify。jdk7添加 -XX:-UseSplitVerifier
+# 否则可能会报 java.lang.IllegalStateException: Unable to load cache item
+TOOLS_OPTS="-Xms4g -Xmx4g -XX:+UseG1GC -noverify $APA_OPTS"
+
+#当日志目录被删除后，不存在时创建
+if [ ! -d "$TOOLS_LOG_DIR" ]; then
+  mkdir $TOOLS_LOG_DIR
+fi
+if [ ! -d "$TOOLS_PID_DIR" ]; then
+  mkdir $TOOLS_PID_DIR
+fi
+
+
+_version() {
+  execJarName=`find $TOOLS_HOME/lib -name 'catalog-core-*.jar' | head -1`
+  projectVersion=`echo $execJarName|awk -F 'lib/catalog-core-' '{print $2}' |awk -F '.jar' '{print $1}'`
+  if [ ! $projectVersion ]; then
+    projectVersion="Version 1.0"
+  fi
+  echo "Version $projectVersion"
+}
+
+_enc() {
+  plaintext=$1
+  if [ ! $plaintext ]; then
+    echo $ERROR_RED" 参数缺失，请输出待加密的字符串值 "
+    exit 1
+  fi
+  CLASS=yore.util.ENC
+  exec_command="-classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  $JAVA $exec_command
+}
+
+# 执行 Phoenix 服务相关操作
+_phoenix() {
+  OUT_PATH=$1
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 3/4 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  #LOG_FILE="-Dlogging.config=classpath:apiserver_logback.xml -Dspring.profiles.active=api"
+  #spring_profiles="-Dspring.config.location=$TOOLS_CONF_DIR/application.properties"
+  # 通过 JVM 指定 -Dspring.profiles.active=config
+  # 通过程序参数指定 --spring.profiles.active=config
+  propertiesPath=TOOLS_CONF_DIR/application.properties
+  formatConf=`grep "catalog.ddl.output.format" $propertiesPath | head -1 | awk -F '=' '{print $2}'`
+  spring_profiles="-Dspring.profiles.active=phoenix -Dcatalog.ddl.output.format=$formatConf"
+  CLASS=yore.phoenix.PhoenixTableSchema
+  # shellcheck disable=SC2124
+  exec_command="$spring_profiles $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE 表结构导出, logging to $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
+}
+
+_hfile() {
+  OUT_PATH=$1
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 5 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  HFILE_PATH=$2
+  if [ ! $HFILE_PATH ]; then
+    echo "[WARN] 将以 $TOOLS_CONF_DIR/HFilePath.properties 中的 hfiles.path 为准，可参考 help 如下 5 用法 "
+    echo "$example_string"
+  fi
+  vm_opts="-Dmy.hfile.config.path=$TOOLS_CONF_DIR/HFilePath.properties"
+  CLASS=yore.hbase.HfileReader
+  # shellcheck disable=SC2124
+  exec_command="$vm_opts $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE HFile文件解析, 日志请查看 $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
+}
+
+_hbase() {
+  OUT_PATH=$1
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 6 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  CLASS=yore.hbase.HBaseTable
+  exec_command="$TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE HFile文件解析, 日志请查看 $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
+}
+
+_hive() {
+  OUT_PATH=$1
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 7 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  spring_profiles="-Dspring.profiles.active=hive"
+  CLASS=yore.hive.HiveTableSchema
+  # shellcheck disable=SC2124
+  exec_command="$spring_profiles $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE 表结构导出, logging to $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
+}
+
+_impala() {
+  OUT_PATH=$1
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 8 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  spring_profiles="-Dspring.profiles.active=impala"
+  CLASS=yore.impala.ImpalaTableSchema
+  # shellcheck disable=SC2124
+  exec_command="$spring_profiles $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE 表结构导出, logging to $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
+}
+
+_kudu() {
+  #echo $TODO_GREEN
+  echo "目前可通过 Impala 获取 Kudu 表结构，可参考如下 9 用法"
+}
+
+_clickhouse() {
+  OUT_PATH=$1
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 10 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  spring_profiles="-Dspring.profiles.active=clickhouse"
+  CLASS=yore.clickhouse.ClickHouseTableSchema
+  # shellcheck disable=SC2124
+  exec_command="$spring_profiles $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE 表结构导出, logging to $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
+}
+
+_mysql() {
+  OUT_PATH=$1
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 11 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  spring_profiles="-Dspring.profiles.active=mysql"
+  CLASS=yore.mysql.MySQLTableSchema
+  # shellcheck disable=SC2124
+  exec_command="$spring_profiles $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE 表结构导出, logging to $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
+}
+
+# start or stop
+_startStop() {
+  startStop=$1
+  case $startStop in
+    (status)
+      TARGET_PID=`cat $pid`
+      state="STOP"
+      if [ ! $TARGET_PID ]; then
+        # font color - red
+        state="\033[1;31m $state \033[0m"
+      else
+        # 如果 pid 存在，则判断 pid 是否在运行
+        serverCount=`ps -ef |grep "$TARGET_PID" |grep -v "grep" |wc -l`
+        if [[ $serverCount -gt 0 ]];then
+          state="RUNNING"
+          # font color - green
+          state="\033[1;32m $state \033[0m"
+        else
+          state="\033[1;31m $state \033[0m"
+        fi
+      fi
+      echo -e "$TYPE server is $state"
+    ;;
+
+    (stop)
+      if [ -f $pid ]; then
+        TARGET_PID=`cat $pid`
+        if kill -0 $TARGET_PID > /dev/null 2>&1; then
+          echo "stopping $TYPE server"
+          kill $TARGET_PID
+          sleep $STOP_TIMEOUT
+          if kill -0 $TARGET_PID > /dev/null 2>&1; then
+            echo "$TYPE server did not stop gracefully after $STOP_TIMEOUT seconds: killing with kill -9"
+            kill -9 $TARGET_PID
+          fi
+        else
+          echo "no $TYPE server to stop"
+        fi
+        rm -f $pid
+      else
+        echo "no Server to stop"
+      fi
+    ;;
+    (*)
+      echo "目前仅支持 status/stop"
+    ;;
+  esac
+}
+
+
+
+if [ "$TYPE" = "version" ] || [ "$TYPE" = "-v" ] ; then
+  _version
+elif [ "$TYPE" = "demo" ]; then
+  echo "$example_string"
+elif [ "$TYPE" = "help" ] || [ "$TYPE" = "--help" ] || [ "$TYPE" = "-h" ]; then
+  _help
+elif [ "$TYPE" = "enc" ] ; then
+  _enc "$@"
+
+elif [ "$TYPE" = "phoenix" ] ; then
+  # 注意前面的参数1已 shift
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _phoenix "$@"
+  fi
+elif [ "$TYPE" = "hfile" ]; then
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _hfile "$@"
+  fi
+elif [ "$TYPE" = "hbase" ]; then
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _hbase "$@"
+  fi
+elif [ "$TYPE" = "hive" ]; then
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _hive "$@"
+  fi
+elif [ "$TYPE" = "impala" ]; then
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _impala "$@"
+  fi
+elif [ "$TYPE" = "kudu" ]; then
+  _kudu
+elif [ "$TYPE" = "clickhouse" ]; then
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _clickhouse "$@"
+  fi
+elif [ "$TYPE" = "mysql" ]; then
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _mysql "$@"
+  fi
+else
+  echo "$ERROR_RED 参数有误，请参考如下用法"
+  _help
+fi
+
+exit

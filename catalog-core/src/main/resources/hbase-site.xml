@@ -1,0 +1,423 @@
+<configuration  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+    <property>
+        <name>dfs.domain.socket.path</name>
+        <value>/var/lib/hadoop-hdfs/dn_socket</value>
+    </property>
+
+    <property>
+        <name>hbase.bucketcache.ioengine</name>
+        <value>offheap</value>
+    </property>
+
+    <property>
+        <name>hbase.bucketcache.size</name>
+        <value>79872</value>
+    </property>
+
+    <property>
+        <name>hbase.bulkload.staging.dir</name>
+        <value>/apps/hbase/staging</value>
+    </property>
+
+    <property>
+        <name>hbase.client.keyvalue.maxsize</name>
+        <value>1572864</value>
+    </property>
+
+    <property>
+        <name>hbase.client.operation.timeout</name>
+        <value>1200000</value>
+    </property>
+
+    <property>
+        <name>hbase.client.retries.number</name>
+        <value>35</value>
+    </property>
+
+    <property>
+        <name>hbase.client.scanner.caching</name>
+        <value>10000</value>
+    </property>
+
+    <property>
+        <name>hbase.client.scanner.timeout.period</name>
+        <value>1800000</value>
+    </property>
+
+    <property>
+        <name>hbase.client.write.buffer</name>
+        <value>5242880</value>
+    </property>
+
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hbase.coprocessor.master.classes</name>
+        <value>org.apache.hadoop.hbase.security.access.AccessController</value>
+    </property>
+
+    <property>
+        <name>hbase.coprocessor.region.classes</name>
+        <value>org.apache.hadoop.hbase.security.token.TokenProvider,org.apache.hadoop.hbase.security.access.AccessController</value>
+    </property>
+
+    <property>
+        <name>hbase.coprocessor.regionserver.classes</name>
+        <value></value>
+    </property>
+
+    <property>
+        <name>hbase.defaults.for.version.skip</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hbase.hlog.asyncer.number</name>
+        <value>10</value>
+    </property>
+
+    <property>
+        <name>hbase.hregion.majorcompaction</name>
+        <value>0</value>
+    </property>
+
+    <property>
+        <name>hbase.hregion.majorcompaction.jitter</name>
+        <value>0.50</value>
+    </property>
+
+    <property>
+        <name>hbase.hregion.max.filesize</name>
+        <value>10737418240</value>
+    </property>
+
+    <property>
+        <name>hbase.hregion.memstore.block.multiplier</name>
+        <value>4</value>
+    </property>
+
+    <property>
+        <name>hbase.hregion.memstore.flush.size</name>
+        <value>134217728</value>
+    </property>
+
+    <property>
+        <name>hbase.hregion.memstore.mslab.enabled</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hbase.hstore.blockingStoreFiles</name>
+        <value>10000</value>
+    </property>
+
+    <property>
+        <name>hbase.hstore.compaction.max</name>
+        <value>10</value>
+    </property>
+
+    <property>
+        <name>hbase.hstore.compaction.max.size</name>
+        <value>21474836480</value>
+    </property>
+
+    <property>
+        <name>hbase.hstore.compactionThreshold</name>
+        <value>3</value>
+    </property>
+
+    <property>
+        <name>hbase.hstore.flusher.count</name>
+        <value>20</value>
+    </property>
+
+    <property>
+        <name>hbase.ipc.server.callqueue.handler.factor</name>
+        <value>0.2</value>
+    </property>
+
+    <property>
+        <name>hbase.ipc.server.callqueue.read.ratio</name>
+        <value>0.6</value>
+    </property>
+
+    <property>
+        <name>hbase.ipc.server.callqueue.scan.ratio</name>
+        <value>0.6</value>
+    </property>
+
+    <property>
+        <name>hbase.local.dir</name>
+        <value>${hbase.tmp.dir}/local</value>
+    </property>
+
+    <property>
+        <name>hbase.master.info.bindAddress</name>
+        <value>0.0.0.0</value>
+    </property>
+
+    <property>
+        <name>hbase.master.info.port</name>
+        <value>16010</value>
+    </property>
+
+    <property>
+        <name>hbase.master.namespace.init.timeout</name>
+        <value>2400000</value>
+    </property>
+
+    <property>
+        <name>hbase.master.port</name>
+        <value>16000</value>
+    </property>
+
+    <property>
+        <name>hbase.master.ui.readonly</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>hbase.master.wait.on.regionservers.timeout</name>
+        <value>30000</value>
+    </property>
+
+    <property>
+        <name>hbase.region.server.rpc.scheduler.factory.class</name>
+        <value>org.apache.hadoop.hbase.ipc.PhoenixRpcSchedulerFactory</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.executor.openregion.threads</name>
+        <value>20</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.global.memstore.size</name>
+        <value>0.4</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.handler.count</name>
+        <value>128</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.hlog.blocksize</name>
+        <value>536870912</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.hlog.splitlog.writer.threads</name>
+        <value>10</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.info.port</name>
+        <value>16030</value>
+    </property>
+
+    <!--<property>
+        <name>hbase.regionserver.lease.period</name>
+        <value>1200000</value>
+    </property>-->
+
+    <property>
+        <name>hbase.regionserver.optionallogflushinterval</name>
+        <value>10000</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.port</name>
+        <value>16020</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.thread.compaction.small</name>
+        <value>3</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.thread.compaction.throttle</name>
+        <value>5368709120</value>
+    </property>
+
+    <property>
+        <name>hbase.regionserver.wal.codec</name>
+        <value>org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec</value>
+    </property>
+
+    <property>
+        <name>hbase.rest.threads.max</name>
+        <value>400</value>
+    </property>
+
+    <property>
+        <name>hbase.rootdir</name>
+        <value>/apps/hbase/data</value>
+    </property>
+
+    <property>
+        <name>hbase.rpc.controllerfactory.class</name>
+        <value></value>
+    </property>
+
+    <property>
+        <name>hbase.rpc.engine</name>
+        <value>org.apache.hadoop.hbase.ipc.SecureRpcEngine</value>
+    </property>
+
+    <property>
+        <name>hbase.rpc.protection</name>
+        <value>authentication</value>
+    </property>
+
+    <property>
+        <name>hbase.rpc.timeout</name>
+        <value>1200000</value>
+    </property>
+
+    <property>
+        <name>hbase.security.authentication</name>
+        <value>simple</value>
+    </property>
+
+    <property>
+        <name>hbase.security.authorization</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hbase.server.thread.wakefrequency</name>
+        <value>20000</value>
+    </property>
+
+    <property>
+        <name>hbase.superuser</name>
+        <value>hbase,hdfs,hue,root</value>
+    </property>
+
+    <property>
+        <name>hbase.tmp.dir</name>
+        <value>/tmp/hbase-${user.name}</value>
+    </property>
+
+    <property>
+        <name>hbase.wal.hsync</name>
+        <value>hflush</value>
+    </property>
+
+    <property>
+        <name>hbase.wal.provider</name>
+        <value>multiwal</value>
+    </property>
+
+    <property>
+        <name>hbase.zookeeper.property.clientPort</name>
+        <value>2181</value>
+    </property>
+
+    <property>
+        <name>hbase.zookeeper.property.maxClientCnxns</name>
+        <value>500</value>
+    </property>
+
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>bdm0,bdm1,etl1,es1,es2</value>
+    </property>
+
+    <property>
+        <name>hbase.zookeeper.useMulti</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hfile.block.cache.size</name>
+        <value>0.4</value>
+    </property>
+
+    <property>
+        <name>index.builder.threads.max</name>
+        <value>200</value>
+    </property>
+
+    <property>
+        <name>index.writer.threads.max</name>
+        <value>200</value>
+    </property>
+
+    <property>
+        <name>org.apache.phoenix.regionserver.index.handler.count</name>
+        <value>200</value>
+    </property>
+
+    <property>
+        <name>phoenix.coprocessor.maxMetaDataCacheTimeToLiveMs</name>
+        <value>1800000</value>
+    </property>
+
+    <property>
+        <name>phoenix.coprocessor.maxServerCacheTimeToLiveMs</name>
+        <value>1800000</value>
+    </property>
+
+    <property>
+        <name>phoenix.functions.allowUserDefinedFunctions</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>phoenix.mutate.batchSize</name>
+        <value>200000</value>
+    </property>
+
+    <property>
+        <name>phoenix.mutate.maxSize</name>
+        <value>15000000</value>
+    </property>
+
+    <property>
+        <name>phoenix.mutate.maxSizeBytes</name>
+        <value>1048576000</value>
+    </property>
+
+    <property>
+        <name>phoenix.query.timeoutMs</name>
+        <value>180000</value>
+    </property>
+
+    <property>
+        <name>phoenix.rpc.index.handler.count</name>
+        <value>30</value>
+    </property>
+
+    <property>
+        <name>phoenix.schema.isNamespaceMappingEnabled</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>phoenix.schema.mapSystemTablesToNamespace</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>zookeeper.recovery.retry</name>
+        <value>6</value>
+    </property>
+
+    <property>
+        <name>zookeeper.session.timeout</name>
+        <value>600000</value>
+    </property>
+
+    <property>
+        <name>zookeeper.znode.parent</name>
+        <value>/hbase-unsecure</value>
+    </property>
+
+</configuration>
