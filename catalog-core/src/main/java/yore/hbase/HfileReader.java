@@ -11,14 +11,10 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.io.hfile.HFile;
 import org.apache.hadoop.hbase.io.hfile.HFileScanner;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import yore.common.RuntimeAnnotation;
+import yore.common.RuntimeAspect;
+import yore.common.util.SysProperties;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -28,8 +24,7 @@ import java.util.Set;
  *
  * @author Yore Yuan
  */
-public class HfileReader {
-    private static final Logger LOG = LoggerFactory.getLogger(HfileReader.class);
+public class HfileReader extends yore.common.FileWriter {
 
     /**
      *
@@ -41,24 +36,16 @@ public class HfileReader {
      *        args[0] outpath，输出的本地路径
      *        args[1] hfile path(local or hdfs)
      */
-    public static void main(String[] args) throws Exception {
-        long start = System.currentTimeMillis();
-        String outFilePath = args[0];
-        File outFile = new File(outFilePath);
-        if (outFile.isDirectory()) {
-            LOG.error("指定的{}为文件夹，请指定输出的文件！", outFilePath);
-        }
-        if (!outFile.exists()) {
-            LOG.warn("输出文件 {} 不存在，将手动创建", outFilePath);
-            String outFileDir = outFilePath.substring(0, outFilePath.lastIndexOf(File.separator) + 1);
-            File outFileDirFile = new File(outFileDir);
-            if (outFileDirFile.mkdirs()) {
-                LOG.warn("{}创建成功", outFileDir);
-            }
-        }
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, true), StandardCharsets.UTF_8));
+    public static void main(String[] args) {
+        initWriter(args[0]);
+        RuntimeAspect.printSpend(HfileReader.class, args);
+    }
+
+
+    @RuntimeAnnotation(descr = "HFile")
+    public static void start(String[] args) throws Exception {
         Set<String> hfilePathSet = new HashSet<>();
-        Properties properties = HFileProp.getHfileProperties();
+        Properties properties = SysProperties.getComponeProperties("hfile-config");
         final String fileModel = properties.getProperty("file.model");
         final String outPrintType = properties.getProperty("out.print.type");
 
@@ -89,9 +76,9 @@ public class HfileReader {
                 while (scanner.next()) {
                     Cell cell = scanner.getCell();
                     byte[] rowBytes = cell.getRowArray(),
-                           cfBytes = cell.getFamilyArray(),
-                           qualifierBytes = cell.getQualifierArray(),
-                           valueBytes = cell.getValueArray();
+                            cfBytes = cell.getFamilyArray(),
+                            qualifierBytes = cell.getQualifierArray(),
+                            valueBytes = cell.getValueArray();
                     JSONObject json = new JSONObject();
                     if ("byte".equalsIgnoreCase(outPrintType)) {
                         json.put("rowkey", Bytes.toStringBinary(rowBytes, cell.getRowOffset(), cell.getRowLength()));
@@ -111,11 +98,8 @@ public class HfileReader {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            writer.close();
+            closeWriter();
         }
-        long end = System.currentTimeMillis();
-        System.out.println("---------------- HFile");
-        System.out.println(" 用时：" + ((end-start) / 1000.0) + " s");
     }
 
 }

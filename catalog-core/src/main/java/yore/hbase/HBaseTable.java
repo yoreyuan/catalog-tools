@@ -1,14 +1,9 @@
 package yore.hbase;
 
 import org.apache.hadoop.hbase.TableName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import yore.common.RuntimeAnnotation;
+import yore.common.RuntimeAspect;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +12,7 @@ import java.util.List;
  *
  * @author Yore Yuan
  */
-public class HBaseTable {
-    private static final Logger LOG = LoggerFactory.getLogger(HBaseTable.class);
+public class HBaseTable extends yore.common.FileWriter {
 
     /**
      *
@@ -27,21 +21,14 @@ public class HBaseTable {
      *        args[1] hfile path(local or hdfs)
      */
     public static void main(String[] args) throws Exception {
-        long start = System.currentTimeMillis();
-        String outFilePath = args[0];
-        File outFile = new File(outFilePath);
-        if (outFile.isDirectory()) {
-            LOG.error("指定的{}为文件夹，请指定输出的文件！", outFilePath);
-        }
-        if (!outFile.exists()) {
-            LOG.warn("输出文件 {} 不存在，将手动创建", outFilePath);
-            String outFileDir = outFilePath.substring(0, outFilePath.lastIndexOf(File.separator) + 1);
-            File outFileDirFile = new File(outFileDir);
-            if (outFileDirFile.mkdirs()) {
-                LOG.warn("{}创建成功", outFileDir);
-            }
-        }
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, true), StandardCharsets.UTF_8));
+        initWriter(args[0]);
+        RuntimeAspect.printSpend(HBaseTable.class, args);
+        closeWriter();
+    }
+
+
+    @RuntimeAnnotation(descr = "HBase")
+    public static void start(String[] args) throws Exception {
         HbaseUtil hbaseUtil = HbaseUtil.getInstance();
         List<String> createCmdList = new ArrayList<>();
 
@@ -59,10 +46,6 @@ public class HBaseTable {
             writer.write(createCmd + "\n");
             writer.flush();
         }
-        writer.close();
-        long end = System.currentTimeMillis();
-        System.out.println("---------------- HBase");
-        System.out.println(" 用时：" + ((end-start) / 1000.0) + " s");
     }
 
 }

@@ -1,4 +1,4 @@
-package yore.util;
+package yore.common.util;
 
 import com.baomidou.dynamic.datasource.toolkit.CryptoUtils;
 

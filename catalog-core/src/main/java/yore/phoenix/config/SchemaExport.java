@@ -5,19 +5,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import yore.common.RuntimeAnnotation;
+import yore.common.RuntimeAspect;
 import yore.phoenix.mapper.HBaseMapper;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <pre>
@@ -52,7 +51,7 @@ import java.util.*;
  */
 @Order(value = 1)
 @Component
-public class SchemaExport implements CommandLineRunner {
+public class SchemaExport extends yore.common.FileWriter implements CommandLineRunner {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -75,26 +74,19 @@ public class SchemaExport implements CommandLineRunner {
     @DS("phoenix")
     @Override
     public void run(String... args) throws Exception {
+        initWriter(args[0]);
+        RuntimeAspect.printSpend(this, args);
+        closeWriter();
+    }
+
+    @RuntimeAnnotation(descr = "Phoenix")
+    public void start(String[] args) throws Exception {
 //        System.out.println(Arrays.toString(args));
-        long start = System.currentTimeMillis();
         if (StringUtils.isEmpty(rowFormat)) {
             rowFormat = "row";
         }
         LOG.info("输出格式为：{}", rowFormat);
-        String outFilePath = args[0];
-        File outFile = new File(outFilePath);
-        if (outFile.isDirectory()) {
-            LOG.error("指定的{}为文件夹，请指定输出的文件！", outFilePath);
-        }
-        if (!outFile.exists()) {
-            LOG.warn("输出文件 {} 不存在，将手动创建", outFilePath);
-            String outFileDir = outFilePath.substring(0, outFilePath.lastIndexOf(File.separator) + 1);
-            File outFileDirFile = new File(outFileDir);
-            if (outFileDirFile.mkdirs()) {
-                LOG.warn("{}创建成功", outFileDir);
-            }
-        }
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, true), StandardCharsets.UTF_8));
+
         Set<String> tableSet = new HashSet<>();
         boolean isRow = "row".equalsIgnoreCase(rowFormat);
 
@@ -115,19 +107,18 @@ public class SchemaExport implements CommandLineRunner {
 //        tableSet.clear();
 //        tableSet.add("T_M_BUS_ASSET_CUS");
 //        tableSet.add("ods_aiu_ldaddress");
-        
+
         // 生成表结构
         for (String TABLE_NAME : tableSet) {
             String tableTypeSql = String.format("SELECT DISTINCT TABLE_TYPE FROM SYSTEM.CATALOG WHERE TABLE_NAME='%s' AND COLUMN_NAME IS NULL", TABLE_NAME);
             String columnNamesql = String.format("SELECT COLUMN_NAME,COLUMN_FAMILY FROM SYSTEM.CATALOG WHERE TABLE_NAME='%s' AND COLUMN_FAMILY IS NOT NULL", TABLE_NAME);
             String createSqlTemp = "CREATE {0} IF NOT EXISTS {1}(\"no\" VARCHAR NOT NULL, {2} CONSTRAINT PK_{3} PRIMARY KEY (\"no\"))column_encoded_bytes=0;";
-            String createSqlTemp2 = "CREATE {0} IF NOT EXISTS {1}(\r\n" +
-                    "  \"no\" VARCHAR NOT NULL,\r\n" +
-                    "{2}" +
-                    "  CONSTRAINT PK_{3} PRIMARY KEY (\"no\")\r\n" +
-                    ")column_encoded_bytes=0;";
             if (!isRow) {
-                createSqlTemp = createSqlTemp2;
+                createSqlTemp = "CREATE {0} IF NOT EXISTS {1}(\r\n" +
+                        "  \"no\" VARCHAR NOT NULL,\r\n" +
+                        "{2}" +
+                        "  CONSTRAINT PK_{3} PRIMARY KEY (\"no\")\r\n" +
+                        ")column_encoded_bytes=0;";;
             }
 
             // Phoenix 中针对大小写进行处理
@@ -168,10 +159,6 @@ public class SchemaExport implements CommandLineRunner {
             writer.write(createSqlTemp + "\n");
             writer.flush();
         }
-        writer.close();
-        long end = System.currentTimeMillis();
-        System.out.println("---------------- Phoenix");
-        System.out.println(" 用时：" + ((end-start) / 1000.0) + " s");
     }
 
 }

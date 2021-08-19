@@ -49,6 +49,8 @@ read -d '' example_string << EOF
     catalog-tools impala /home/user/impala-table-DDL-DATE-part1.sql db_name table1 table2 ...
 
   9. Kudu表结构备份。通过 impala 进行备份，见 8
+    catalog-tools kudu /home/user/kudu-table-DDL-DATE.json
+    catalog-tools kudu /home/user/kudu-table-DDL-DATE.json table1 table2 ...
 
   10. clickhouse表结构备份
     catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE.sql
@@ -144,7 +146,7 @@ _enc() {
     echo $ERROR_RED" 参数缺失，请输出待加密的字符串值 "
     exit 1
   fi
-  CLASS=yore.util.ENC
+  CLASS=yore.common.util.ENC
   exec_command="-classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
   $JAVA $exec_command
 }
@@ -191,7 +193,7 @@ _hfile() {
     echo "[WARN] 将以 $TOOLS_CONF_DIR/HFilePath.properties 中的 hfiles.path 为准，可参考 help 如下 5 用法 "
     echo "$example_string"
   fi
-  vm_opts="-Dmy.hfile.config.path=$TOOLS_CONF_DIR/HFilePath.properties"
+  vm_opts="-Dmy.config.path=$TOOLS_CONF_DIR/hfile-config.properties"
   CLASS=yore.hbase.HfileReader
   # shellcheck disable=SC2124
   exec_command="$vm_opts $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
@@ -276,7 +278,27 @@ _impala() {
 
 _kudu() {
   #echo $TODO_GREEN
-  echo "目前可通过 Impala 获取 Kudu 表结构，可参考如下 9 用法"
+  echo "推荐通过 Impala 获取 Kudu 表结构，可参考 8 用法"
+  if [ ! $OUT_PATH ]; then
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 9 用法 "
+    echo "$example_string"
+    exit 1
+  fi
+  vm_opts="-Dsys.config.path=$TOOLS_CONF_DIR/application.properties"
+  vm_opts="$vm_opts -Dmy.config.path=$TOOLS_CONF_DIR/kudu-config.properties "
+  CLASS=yore.kudu.SchemaExport
+  # shellcheck disable=SC2124
+  exec_command="$vm_opts $TOOLS_OPTS -classpath $TOOLS_CONF_DIR:$TOOLS_LIB_JARS $CLASS $@"
+  if [ -f $pid ]; then
+    if kill -0 `cat $pid` > /dev/null 2>&1; then
+      echo "$TYPE 正在运行，进程 id 为 `cat $pid`，请先关闭此进程服务。"
+      exit 1
+    fi
+  fi
+  echo "启动 $TYPE 表结构导出, logging to $log"
+  echo "nohup $JAVA $exec_command > $log 2>&1 < /dev/null &"
+  nohup $JAVA $exec_command > $log 2>&1 < /dev/null &
+  echo $! > $pid
 }
 
 _clickhouse() {
@@ -422,7 +444,12 @@ elif [ "$TYPE" = "impala" ]; then
     _impala "$@"
   fi
 elif [ "$TYPE" = "kudu" ]; then
-  _kudu
+  startStop=$1
+  if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
+    _startStop $startStop
+  else
+    _kudu "$@"
+  fi
 elif [ "$TYPE" = "clickhouse" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
