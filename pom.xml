@@ -22,6 +22,7 @@
         <spring-boot.version>2.4.4</spring-boot.version>
         <hbase.version>2.0.0</hbase.version>
         <phoenix.version>5.0.0-HBase-2.0</phoenix.version>
+        <kudu.version>1.10.0</kudu.version>
         <provided.scope>provided</provided.scope>
     </properties>
 
@@ -109,6 +110,11 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>4.5.13</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kudu</groupId>
+                <artifactId>kudu-client</artifactId>
+                <version>${kudu.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

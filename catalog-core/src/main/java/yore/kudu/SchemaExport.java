@@ -35,7 +35,7 @@ public class SchemaExport extends yore.common.FileWriter {
      */
     public static void main(String[] args) {
         TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.SHORT_IDS.get("CTT")));
-        //args = new String[]{"/tmp/y/kudu-01.txt", "impala::impala_kudu_model.t_m_bus_tmp_ply"};
+        //args = new String[]{"/tmp/yore/kudu-01.txt", "impala::impala_kudu_model.t_m_bus_tmp_ply"};
         initWriter(args[0]);
         RuntimeAspect.printSpend(SchemaExport.class, args);
         closeWriter();
@@ -167,7 +167,6 @@ public class SchemaExport extends yore.common.FileWriter {
                     writer.write(JSON.toJSONString(ddlJson, SerializerFeature.PrettyFormat) + "\n");
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

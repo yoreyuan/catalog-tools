@@ -60,9 +60,8 @@ public class SchemaExport extends yore.common.FileWriter implements CommandLineR
     @Autowired
     HBaseMapper phoenixDao;
 
-//    @Value("${catalog.ddl.output.format}")
-//    private String rowFormat;
-    private String rowFormat = System.getProperty("catalog.ddl.output.format");
+    //@Value("${catalog.ddl.output.format}")
+    private String rowFormat;
 
 
     /**
@@ -82,6 +81,7 @@ public class SchemaExport extends yore.common.FileWriter implements CommandLineR
     @RuntimeAnnotation(descr = "Phoenix")
     public void start(String[] args) throws Exception {
 //        System.out.println(Arrays.toString(args));
+        rowFormat = System.getProperty("catalog.ddl.output.format");
         if (StringUtils.isEmpty(rowFormat)) {
             rowFormat = "row";
         }

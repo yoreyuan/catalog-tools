@@ -21,46 +21,49 @@
 #
 read -d '' example_string << EOF
 示例:
-  1. 查看 Phoenix 备份运行服务的状态
+  1. View the running status of a command
     catalog-tools phoenix status
-  2. 停止正在运行的 Phoenix 备份服务
+  2. Manually close the specified service
     catalog-tools phoenix stop
 
-  3. 备份 Phoenix 所有 表or视图 到 /home/user/Phoenix-view-DDL-DATE.sql
+  3. Encrypted string
+    catalog-tools enc 123456
+
+  4.1 Output all tables or views
     catalog-tools phoenix /home/user/Phoenix-view-DDL-DATE.sql
-  4. 备份 Phoenix 中T_M_INF_POLICY 表or视图到 /home/user/Phoenix-view-DDL-DATE-part.sql
+  4.2 Output the specified table or view
     catalog-tools phoenix /home/user/Phoenix-view-DDL-DATE.sql T_M_INF_POLICY
 
-  5. 解析 hfile 为json（hfile_path根据 conf/HFilePath.properties 中的 file.model 可为 local 或 hdfs）
+  5. Parse hfile to json (hfile_path can be local or hdfs according to 'file.model' in conf/hfile-config.properties)
     catalog-tools hfile /home/user/hfile-kv-DATE.data hfile_path1 hfile_path2 ...
 
-  6. hbase表结构备份
+  6. Export HBase table
     catalog-tools hbase /home/user/hbase-table-DDL-DATE.txt
-    catalog-tools hbase /home/user/hbase-table-DDL-DATE.txt table1 table2 ...
+    catalog-tools hbase /home/user/hbase-table-DDL-DATE.txt table_name1 table_name2 ...
 
-  7. Hive表结构备份
+  7. Export Hive Table
     catalog-tools hive /home/user/hive-table-DDL-DATE.sql
     catalog-tools hive /home/user/hive-table-DDL-DATE-part0.sql db_name
-    catalog-tools hive /home/user/hive-table-DDL-DATE-part1.sql db_name table1 table2 ...
+    catalog-tools hive /home/user/hive-table-DDL-DATE-part1.sql db_name table_name1 table_name2 ...
 
-  8. impala表结构备份
+  8. Export Impala table
     catalog-tools impala /home/user/impala-table-DDL-DATE.sql
     catalog-tools impala /home/user/impala-table-DDL-DATE-part0.sql db_name
-    catalog-tools impala /home/user/impala-table-DDL-DATE-part1.sql db_name table1 table2 ...
+    catalog-tools impala /home/user/impala-table-DDL-DATE-part1.sql db_name table_name1 table_name2 ...
 
-  9. Kudu表结构备份。通过 impala 进行备份，见 8
+  9. Export Kudu table
     catalog-tools kudu /home/user/kudu-table-DDL-DATE.json
-    catalog-tools kudu /home/user/kudu-table-DDL-DATE.json table1 table2 ...
+    catalog-tools kudu /home/user/kudu-table-DDL-DATE.json table_name1 table_name2 ...
 
-  10. clickhouse表结构备份
+  10. Export ClickHouse table
     catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE.sql
     catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE-part0.sql db_name
-    catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE-part1.sql db_name table1 table2 ...
+    catalog-tools clickhouse /home/user/clickhouse-table-DDL-DATE-part1.sql db_name table_name1 table_name2 ...
 
-  11. mysql表结构备份
+  11. Export MySQL table
     catalog-tools mysql /home/user/mysql-table-DDL-DATE.sql
     catalog-tools mysql /home/user/mysql-table-DDL-DATE-part0.sql db_name
-    catalog-tools mysql /home/user/mysql-table-DDL-DATE-part1.sql db_name table1 table2 ...
+    catalog-tools mysql /home/user/mysql-table-DDL-DATE-part1.sql db_name table_name1 table_name2 ...
 
 EOF
 
@@ -70,23 +73,23 @@ example_string=`echo "$example_string" | sed  "s@DATE@${nowdate}@g"`
 _help() {
   #echo "Usage: catalog-tools [<options>] <command> [<args>]"
   echo "Usage: catalog-tools.sh <type> <outpath|stop|status> [<args>]"
-  echo "type: 数据备份的类型【必填】"
-  echo "    demo            查看示例"
-  echo "    help            查看帮助信息，亦等价于：--help、-h"
-  echo "    version         查看版本信息, 亦等价于：-v"
-  echo "    enc             转密文"
-  echo "    phoenix         备份Phoenix表及视图"
-  echo "    hfile           解析 HFile 数据"
-  echo "    hbase           备份HBase表"
-  echo "    hive            备份Hive库表"
-  echo "    impala          备份Impala库表"
-  echo "    Kudu            备份Kudu表"
-  echo "    clickhouse      备份ClickHouse库表"
-  echo "    mysql           备份Mysql库表"
-  echo "outpath: 备份数据的输出路径【必填】"
-  echo "stop: 停止指定的正在运行的服务"
-  echo "status: 查看指定服务的运行状态"
-  echo "args: 可选参数，可以指定具体的库表"
+  echo "type: Type of database【required】"
+  echo "    demo            View example"
+  echo "    help            View help information, which is also equivalent to: --help, -h"
+  echo "    version         View version information, which is also equivalent to: -v"
+  echo "    enc             Encrypted"
+  echo "    phoenix         Output Phoenix tables and views"
+  echo "    hfile           Parse HFile data"
+  echo "    hbase           Output HBase table"
+  echo "    hive            Output Hive library table"
+  echo "    impala          Output Impala library table"
+  echo "    Kudu            Export Kudu table"
+  echo "    clickhouse      Output ClickHouse library table"
+  echo "    mysql           Output Mysql library table"
+  echo "outpath: Path of output data【Required】"
+  echo "stop: Stop the specified running service"
+  echo "status: View the running status of the specified service"
+  echo "args: Optional parameter, you can specify a specific database name or table name"
   echo ""
   echo "$example_string"
   echo ""
@@ -143,7 +146,8 @@ _version() {
 _enc() {
   plaintext=$1
   if [ ! $plaintext ]; then
-    echo $ERROR_RED" 参数缺失，请输出待加密的字符串值 "
+    echo $ERROR_RED" 参数缺失，请输出待加密的字符串值。可参考如下 3 用法 "
+    echo "$example_string"
     exit 1
   fi
   CLASS=yore.common.util.ENC
@@ -155,7 +159,7 @@ _enc() {
 _phoenix() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
-    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 3/4 用法 "
+    echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 4 用法 "
     echo "$example_string"
     exit 1
   fi
@@ -163,8 +167,8 @@ _phoenix() {
   #spring_profiles="-Dspring.config.location=$TOOLS_CONF_DIR/application.properties"
   # 通过 JVM 指定 -Dspring.profiles.active=config
   # 通过程序参数指定 --spring.profiles.active=config
-  propertiesPath=TOOLS_CONF_DIR/application.properties
-  formatConf=`grep "catalog.ddl.output.format" $propertiesPath | head -1 | awk -F '=' '{print $2}'`
+  propertiesPath=$TOOLS_CONF_DIR/application.properties
+  formatConf=`grep "catalog.ddl.output.format" $propertiesPath |grep -v ^# | head -1 | awk -F '=' '{print $2}'`
   spring_profiles="-Dspring.profiles.active=phoenix -Dcatalog.ddl.output.format=$formatConf"
   CLASS=yore.phoenix.PhoenixTableSchema
   # shellcheck disable=SC2124
@@ -278,6 +282,7 @@ _impala() {
 
 _kudu() {
   #echo $TODO_GREEN
+  OUT_PATH=$1
   echo "推荐通过 Impala 获取 Kudu 表结构，可参考 8 用法"
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 9 用法 "
@@ -366,6 +371,7 @@ _startStop() {
           state="\033[1;32m $state \033[0m"
         else
           state="\033[1;31m $state \033[0m"
+          mv -f $pid /tmp
         fi
       fi
       echo -e "$TYPE server is $state"
@@ -465,7 +471,7 @@ elif [ "$TYPE" = "mysql" ]; then
     _mysql "$@"
   fi
 else
-  echo "$ERROR_RED 参数有误，请参考如下用法"
+  echo "The $ERROR_RED parameter is wrong, please refer to the following usage:"
   _help
 fi
 

@@ -86,7 +86,7 @@ public class SchemaExport extends yore.common.FileWriter implements CommandLineR
                 writer.write(createSql + "\n");
                 writer.flush();
             } catch (Exception e) {
-                LOG.error("执行表{}是发生了异常：{}", dbTable, e.getMessage());
+                LOG.error("执行表{}时发生了异常：{}", dbTable, e.getMessage());
             }
         }
     }

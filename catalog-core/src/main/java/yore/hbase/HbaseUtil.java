@@ -21,7 +21,7 @@ public class HbaseUtil {
     private Connection connection = null;
     // 命名空间与管理表DDL
     private Admin admin = null;
-    private static HbaseUtil hbaseUtil;
+
     private HbaseUtil() {
         conf = InitHbaseEnv();
         try {
@@ -37,10 +37,7 @@ public class HbaseUtil {
      * 单例模式，获取HBase实例
      */
     public static HbaseUtil getInstance() {
-        //这里先不用单例了
-        hbaseUtil = new HbaseUtil();
-        return hbaseUtil;
-        // return InstanceHolder.hbaseUtil;
+        return new HbaseUtil();
     }
 
     private Configuration InitHbaseEnv() {
@@ -73,7 +70,7 @@ public class HbaseUtil {
 
     /**
      * 获取 HBase 中所有表名
-     * @return
+     * @return List
      */
     public List<String> list() {
         List<String> result = new ArrayList<>();
