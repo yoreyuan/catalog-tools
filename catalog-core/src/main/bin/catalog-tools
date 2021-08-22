@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 #
 # 数据表结构导出备份工具脚本，
 # 功能：
@@ -168,7 +168,7 @@ _phoenix() {
   # 通过 JVM 指定 -Dspring.profiles.active=config
   # 通过程序参数指定 --spring.profiles.active=config
   propertiesPath=$TOOLS_CONF_DIR/application.properties
-  formatConf=`grep "catalog.ddl.output.format" $propertiesPath |grep -v ^# | head -1 | awk -F '=' '{print $2}'`
+  formatConf=`grep "^catalog.ddl.output.format" $propertiesPath |cut -d= -f 2`
   spring_profiles="-Dspring.profiles.active=phoenix -Dcatalog.ddl.output.format=$formatConf"
   CLASS=yore.phoenix.PhoenixTableSchema
   # shellcheck disable=SC2124
