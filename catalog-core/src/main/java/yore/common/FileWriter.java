@@ -14,20 +14,20 @@ public abstract class FileWriter {
     protected static BufferedWriter writer;
 
     /**
-     * 初始化 writer
-     * @param outFilePath 输出的文件路径
+     * Initialize writer
+     * @param outFilePath Output file path
      */
     protected static void initWriter(String outFilePath) {
         File outFile = new File(outFilePath);
         if (outFile.isDirectory()) {
-            LOG.error("指定的{}为文件夹，请指定输出的文件！", outFilePath);
+            LOG.error("The specified {} is a folder, please specify the output file!", outFilePath);
         }
         if (!outFile.exists()) {
-            LOG.warn("输出文件 {} 不存在，将手动创建", outFilePath);
+            LOG.warn("The output file {} does not exist, it will be created automatically.", outFilePath);
             String outFileDir = outFilePath.substring(0, outFilePath.lastIndexOf(File.separator) + 1);
             File outFileDirFile = new File(outFileDir);
             if (outFileDirFile.mkdirs()) {
-                LOG.warn("{}创建成功", outFileDir);
+                LOG.warn("{} Created successfully!", outFileDir);
             }
         }
         try {
@@ -39,7 +39,7 @@ public abstract class FileWriter {
 
 
     /**
-     * 关闭 writer
+     * Close writer
      */
     protected static void closeWriter() {
         if (writer != null) {

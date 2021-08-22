@@ -9,10 +9,10 @@ import java.lang.reflect.Method;
 public class RuntimeAspect {
 
     /**
-     * 执行方法的时间
+     * Print execution time
      *
-     * @param clazz 类
-     * @param args 参数列表
+     * @param clazz Class
+     * @param args Parameter list
      */
     public static void printSpend(final Class<?> clazz, String[] args) {
         try {
@@ -35,15 +35,15 @@ public class RuntimeAspect {
                     long end = System.currentTimeMillis();
                     System.out.println("---------------- " + runtimeAnnotation.descr());
                     switch (runtimeAnnotation.unit()) {
-                        case SECONDS: System.out.println(" 用时：" + ((end-start) / 1000.0) + " s"); break;
-                        case MINUTES: System.out.println(" 用时：" + ((end-start) / 1000.0 / 60.0) + " m"); break;
-                        case HOURS: System.out.println(" 用时：" + ((end-start) / 1000.0 / 3600.0) + " h"); break;
-                        case HALF_DAYS: System.out.println(" 用时：" + ((end-start) / 1000.0 / 43200.0) + " HalfDays"); break;
-                        case DAYS: System.out.println(" 用时：" + ((end-start) / 1000.0 / 86400.0) + " day"); break;
-                        case WEEKS: System.out.println(" 用时：" + ((end-start) / 1000.0 / (7 * 86400.0)) + " week"); break;
-                        case MONTHS: System.out.println(" 用时：" + ((end-start) / 1000.0 / (31556952L / 12)) + " month"); break;
-                        case YEARS: System.out.println(" 用时：" + ((end-start) / 1000 / 31556952L) + " year"); break;
-                        default: System.out.println(" 用时：" + (end-start) + " ms"); break;
+                        case SECONDS: System.out.println(" Time spent：" + ((end-start) / 1000.0) + " s"); break;
+                        case MINUTES: System.out.println(" Time spent：" + ((end-start) / 1000.0 / 60.0) + " m"); break;
+                        case HOURS: System.out.println(" Time spent：" + ((end-start) / 1000.0 / 3600.0) + " h"); break;
+                        case HALF_DAYS: System.out.println(" Time spent：" + ((end-start) / 1000.0 / 43200.0) + " HalfDays"); break;
+                        case DAYS: System.out.println(" Time spent：" + ((end-start) / 1000.0 / 86400.0) + " day"); break;
+                        case WEEKS: System.out.println(" Time spent：" + ((end-start) / 1000.0 / (7 * 86400.0)) + " week"); break;
+                        case MONTHS: System.out.println(" Time spent：" + ((end-start) / 1000.0 / (31556952L / 12)) + " month"); break;
+                        case YEARS: System.out.println(" Time spent：" + ((end-start) / 1000 / 31556952L) + " year"); break;
+                        default: System.out.println(" Time spent：" + (end-start) + " ms"); break;
                     }
                 }
             }

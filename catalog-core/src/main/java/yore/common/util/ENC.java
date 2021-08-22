@@ -11,13 +11,13 @@ public class ENC {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.err.println("请输入要加密的字符串");
+            System.err.println("Please enter the string to be encrypted!");
             System.exit(0);
         }
         try {
             String encryptStr = CryptoUtils.encrypt( args[0]);
-            System.out.println("明文：" + args[0]);
-            System.out.println("密文：" + encryptStr);
+            System.out.println("Plaintext：" + args[0]);
+            System.out.println("Ciphertext：" + encryptStr);
         } catch (Exception e) {
             e.printStackTrace();
         }

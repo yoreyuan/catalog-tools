@@ -12,13 +12,13 @@ import java.time.temporal.ChronoUnit;
 public @interface RuntimeAnnotation {
 
     /**
-     * 运行花费时间的单位，
-     * 默认为秒值
+     * The unit of running time,
+     * the default is milliseconds.
      */
     ChronoUnit unit() default ChronoUnit.SECONDS;
 
     /**
-     * 描述信息
+     * Description
      */
     String descr() default "";
 
