@@ -88,7 +88,7 @@ public class HiveDbServiceImpl implements HiveDbService {
         for (Map<String, Object> rsMap : listMap) {
             String sqlLine = (String)rsMap.get("createtab_stmt");
             if ("row".equalsIgnoreCase(rowFormat)) {
-                createSql += sqlLine;
+                createSql += sqlLine + " ";
             } else {
                 createSql = String.join("\r\n", createSql, sqlLine);
             }

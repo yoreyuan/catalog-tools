@@ -72,7 +72,7 @@ example_string=`echo "$example_string" | sed  "s@DATE@${nowdate}@g"`
 
 _help() {
   #echo "Usage: catalog-tools [<options>] <command> [<args>]"
-  echo "Usage: catalog-tools.sh <type> <outpath|stop|status> [<args>]"
+  echo "Usage: catalog-tools <type> <outpath|stop|status> [<args>]"
   echo "type: Type of database【required】"
   echo "    demo            View example"
   echo "    help            View help information, which is also equivalent to: --help, -h"

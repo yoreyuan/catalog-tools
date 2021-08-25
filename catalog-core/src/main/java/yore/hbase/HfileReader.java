@@ -29,7 +29,7 @@ public class HfileReader extends yore.common.FileWriter {
     /**
      *
      * 参见：
-     * <a href='https://gitee.com/zhimashengu/hbase-release/blob/HDP-3.1.0.0-78-tag/hbase-server/src/main/java/org/apache/hadoop/hbase/io/hfile/HFilePrettyPrinter.java'>
+     * <a href='https://gitee.com/yoreyuan/hbase-release/blob/HDP-3.1.0.0-78-tag/hbase-server/src/main/java/org/apache/hadoop/hbase/io/hfile/HFilePrettyPrinter.java'>
      *   org.apache.hadoop.hbase.io.hfile.HFilePrettyPrinter
      * </a>
      * @param args 入参

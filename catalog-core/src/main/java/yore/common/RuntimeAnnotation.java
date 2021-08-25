@@ -13,7 +13,7 @@ public @interface RuntimeAnnotation {
 
     /**
      * The unit of running time,
-     * the default is milliseconds.
+     * The default is seconds.
      */
     ChronoUnit unit() default ChronoUnit.SECONDS;
 

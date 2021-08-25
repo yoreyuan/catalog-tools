@@ -70,7 +70,7 @@ public class ClickHouseDbServiceImpl implements ClickHouseDbService {
             // 默认带有换行字符
             String sqlLine = (String)rsMap.get("statement");
             if ("row".equalsIgnoreCase(rowFormat)) {
-                sqlLine = sqlLine.replaceAll("\r?\n", "");
+                sqlLine = sqlLine.replaceAll("\r?\n", " ");
             }
             createSql.append(sqlLine);
         }

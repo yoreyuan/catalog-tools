@@ -70,7 +70,7 @@ public class MySQLDbServiceImpl implements MySQLDbService {
                     "CREATE TABLE `" + db + "`.`" + table + "`"
             );
             if ("row".equalsIgnoreCase(rowFormat)) {
-                sqlLine = sqlLine.replaceAll("\r?\n", "");
+                sqlLine = sqlLine.replaceAll("\r?\n", " ");
             }
             createSql.append(sqlLine);
         }

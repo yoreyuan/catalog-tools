@@ -85,7 +85,7 @@ public class ImpalaDbServiceImpl implements ImpalaDbService {
             // 默认带有换行字符
             String sqlLine = (String)rsMap.get("result");
             if ("row".equalsIgnoreCase(rowFormat)) {
-                sqlLine = sqlLine.replaceAll("\r?\n", "");
+                sqlLine = sqlLine.replaceAll("\r?\n", " ");
 //                Pattern p = Pattern.compile("\\s*|\t|\r|\n");
 //                Pattern p = Pattern.compile("\r?\n");
 //                Matcher m = p.matcher(sqlLine);
