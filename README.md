@@ -24,17 +24,17 @@ the project deployment package directory description
 ├── bin                                     # Script directory
 │   └── catalog-tools                       # catalog-tools Script
 ├── conf
-│   ├── application-clickhouse.properties   #Apply to access the relevant configuration of ClickHouse
-│   ├── application-hive.properties         #Apply to access the relevant configuration of Hive
-│   ├── application-impala.properties       #Apply to access the relevant configuration of Impala
-│   ├── application-mysql.properties        #Apply to access the relevant configuration of MySQL
-│   ├── application-phoenix.properties      #Apply to access the relevant configuration of Phoenix
-│   ├── application.properties              #App configuration
+│   ├── application-clickhouse.properties   # Configure access to ClickHouse
+│   ├── application-hive.properties         # Configure access to Hive
+│   ├── application-impala.properties       # Configure access to Impala
+│   ├── application-mysql.properties        # Configure access to MySQL
+│   ├── application-phoenix.properties      # Configure access to Phoenix
+│   ├── application.properties              # App configuration
 │   ├── core-site.xml                       #Hadoop configuration
 │   ├── hbase-site.xml                      #HBase configuration
 │   ├── hdfs-site.xml                       #HDFS configuration
-│   ├── hfile-config.properties             #HFile configuration
-│   ├── kudu-config.properties              #Kudu configuration
+│   ├── hfile-config.properties             # HFile configuration
+│   ├── kudu-config.properties              # Kudu configuration
 │   └── phoenix
 ├── lib                                     #library directory
  ……
