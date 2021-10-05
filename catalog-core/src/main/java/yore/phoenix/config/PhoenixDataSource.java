@@ -37,7 +37,7 @@ import java.util.Properties;
  * Phoenix DataSource
  *
  * &#64;MapperScan 配置mybatis的接口类放的地方
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 @Configuration
 @MapperScan(basePackages = PhoenixDataSource.PACKAGE, sqlSessionFactoryRef = "phoenixSqlSessionFactory")

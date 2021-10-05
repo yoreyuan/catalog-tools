@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 @Component
 public class HiveJdbc {

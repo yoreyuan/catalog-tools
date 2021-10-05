@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * HBase 表结构备份
  *
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 public class HBaseTable extends yore.common.FileWriter {
 

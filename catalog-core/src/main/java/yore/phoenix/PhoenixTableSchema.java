@@ -25,7 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * 导出 Phoenix 表结构，
  * 包含表和视图
  *
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 @SpringBootApplication
 @MapperScan("yore.phoenix.mapper")

@@ -23,7 +23,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * 导出 Hive 表结构，
  *
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 @SpringBootApplication
 public class HiveTableSchema {

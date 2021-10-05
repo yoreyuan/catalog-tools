@@ -24,7 +24,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 public abstract class FileWriter {
     private static final Logger LOG = LoggerFactory.getLogger(FileWriter.class);

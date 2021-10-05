@@ -21,7 +21,7 @@ import java.lang.annotation.*;
 import java.time.temporal.ChronoUnit;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 @Documented
 @Target(ElementType.METHOD)

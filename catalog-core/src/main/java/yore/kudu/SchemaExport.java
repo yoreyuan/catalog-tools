@@ -39,7 +39,7 @@ import java.util.*;
  * <p>所以尽管可以导出 Kudu 表结构为 json，但还是无法导入 Kudu
  * <p>此时建议通过 Impala 方式导出 Kudu 表
  *
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 public class SchemaExport extends yore.common.FileWriter {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());

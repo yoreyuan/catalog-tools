@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 public class HbaseUtil {
 

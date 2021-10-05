@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 public class RuntimeAspect {
 

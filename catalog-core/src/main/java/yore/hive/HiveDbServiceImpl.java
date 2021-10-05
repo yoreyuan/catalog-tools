@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 @DS("metastore")
 @Service

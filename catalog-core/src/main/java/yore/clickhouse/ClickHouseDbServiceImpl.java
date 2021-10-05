@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 @Service
 public class ClickHouseDbServiceImpl implements ClickHouseDbService {

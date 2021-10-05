@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 public class SysProperties {
 

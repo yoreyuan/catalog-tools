@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * HFile 解析工具
  *
- * @author Yore Yuan
+ * @author Yore Yuen
  */
 public class HfileReader extends yore.common.FileWriter {
 
