@@ -57,7 +57,7 @@ bin/catalog-tools version
 bin/catalog-tools demo
 
 # 4 加密字符串
-catalog-tools enc 123456
+bin/catalog-tools enc 123456
 
 # 5 查看某个命令的运行状态
 # 目前支持： phoenix、hfile、hbase、hive、impala、kudu、clickhouse、mysql

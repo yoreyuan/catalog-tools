@@ -87,7 +87,7 @@ EOF
 nowdate=`date '+%Y-%m-%d-%H%M%S'`
 example_string=`echo "$example_string" | sed  "s@DATE@${nowdate}@g"`
 
-function f_help() {
+function do_help() {
   #echo "Usage: catalog-tools [<options>] <command> [<args>]"
   echo "Usage: catalog-tools <type> <outpath|stop|status> [<args>]"
   echo "type: Type of database【required】"
@@ -115,7 +115,7 @@ function f_help() {
 
 
 if [ $# = 0 ]; then
-  f_help
+  do_help
 fi
 
 BIN_DIR=`dirname "$0"`
@@ -151,7 +151,7 @@ if [ ! -d "$TOOLS_PID_DIR" ]; then
 fi
 
 
-function f_version() {
+function do_version() {
   execJarName=`find $TOOLS_HOME/lib -name 'catalog-core-*.jar' | head -1`
   projectVersion=`echo $execJarName|awk -F 'lib/catalog-core-' '{print $2}' |awk -F '.jar' '{print $1}'`
   if [ ! $projectVersion ]; then
@@ -160,7 +160,7 @@ function f_version() {
   echo "Version $projectVersion"
 }
 
-function f_enc() {
+function do_enc() {
   plaintext=$1
   if [ ! $plaintext ]; then
     echo $ERROR_RED" 参数缺失，请输出待加密的字符串值。可参考如下 3 用法 "
@@ -173,7 +173,7 @@ function f_enc() {
 }
 
 # 执行 Phoenix 服务相关操作
-function f_phoenix() {
+function do_phoenix() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 4 用法 "
@@ -202,7 +202,7 @@ function f_phoenix() {
   echo $! > $pid
 }
 
-function f_hfile() {
+function do_hfile() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 5 用法 "
@@ -230,7 +230,7 @@ function f_hfile() {
   echo $! > $pid
 }
 
-function f_hbase() {
+function do_hbase() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 6 用法 "
@@ -251,7 +251,7 @@ function f_hbase() {
   echo $! > $pid
 }
 
-function f_hive() {
+function do_hive() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 7 用法 "
@@ -274,7 +274,7 @@ function f_hive() {
   echo $! > $pid
 }
 
-function f_impala() {
+function do_impala() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 8 用法 "
@@ -297,7 +297,7 @@ function f_impala() {
   echo $! > $pid
 }
 
-function f_kudu() {
+function do_kudu() {
   #echo $TODO_GREEN
   OUT_PATH=$1
   echo "推荐通过 Impala 获取 Kudu 表结构，可参考 8 用法"
@@ -323,7 +323,7 @@ function f_kudu() {
   echo $! > $pid
 }
 
-function f_clickhouse() {
+function do_clickhouse() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 10 用法 "
@@ -346,7 +346,7 @@ function f_clickhouse() {
   echo $! > $pid
 }
 
-function f_mysql() {
+function do_mysql() {
   OUT_PATH=$1
   if [ ! $OUT_PATH ]; then
     echo $ERROR_RED" 参数缺失，请指定数据输出的路径，可参考如下 11 用法 "
@@ -370,7 +370,7 @@ function f_mysql() {
 }
 
 # start or stop
-function f_startStop() {
+function do_startStop() {
   startStop=$1
   case $startStop in
     (status)
@@ -422,74 +422,74 @@ function f_startStop() {
 
 
 if [ "$TYPE" = "version" ] || [ "$TYPE" = "-v" ] ; then
-  f_version
+  do_version
 elif [ "$TYPE" = "demo" ]; then
   echo "$example_string"
 elif [ "$TYPE" = "help" ] || [ "$TYPE" = "--help" ] || [ "$TYPE" = "-h" ]; then
-  f_help
+  do_help
 elif [ "$TYPE" = "enc" ] ; then
-  f_enc "$@"
+  do_enc "$@"
 
 elif [ "$TYPE" = "phoenix" ] ; then
   # 注意前面的参数1已 shift
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_phoenix "$@"
+    do_phoenix "$@"
   fi
 elif [ "$TYPE" = "hfile" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_hfile "$@"
+    do_hfile "$@"
   fi
 elif [ "$TYPE" = "hbase" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_hbase "$@"
+    do_hbase "$@"
   fi
 elif [ "$TYPE" = "hive" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_hive "$@"
+    do_hive "$@"
   fi
 elif [ "$TYPE" = "impala" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_impala "$@"
+    do_impala "$@"
   fi
 elif [ "$TYPE" = "kudu" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_kudu "$@"
+    do_kudu "$@"
   fi
 elif [ "$TYPE" = "clickhouse" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_clickhouse "$@"
+    do_clickhouse "$@"
   fi
 elif [ "$TYPE" = "mysql" ]; then
   startStop=$1
   if [ "$startStop" = "status" ] || [ "$startStop" = "stop" ] ; then
-    f_startStop $startStop
+    do_startStop $startStop
   else
-    f_mysql "$@"
+    do_mysql "$@"
   fi
 else
   echo "The $ERROR_RED parameter is wrong, please refer to the following usage:"
-  f_help
+  do_help
 fi
 
 exit

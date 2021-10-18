@@ -55,7 +55,7 @@ bin/catalog-tools version
 bin/catalog-tools demo
 
 # 4 Encrypted string
-catalog-tools enc 123456
+bin/catalog-tools enc 123456
 
 # 5 View the running status of a command
 # Currently supported: phoenix, hfile, hbase, hive, impala, kudu, clickhouse, mysql
